@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Encode for Google search (no jq)
+rawurlencode() {
+    local str="$*"
+    local encoded=""
+    local pos c o
+
+    for (( pos=0 ; pos<${#str} ; pos++ )); do
+        c=${str:$pos:1}
+        case "$c" in
+            [-_.~a-zA-Z0-9] ) o="$c" ;;
+            * )               printf -v o '%%%02X' "'$c"
+        esac
+        encoded+="$o"
+    done
+    echo "$encoded"
+}
+
+# Loop over all args
+for arg in "$@"; do
+    if [[ "$arg" == http*://* ]]; then
+        open -a "Google Chrome" "$arg"
+    elif [[ "$arg" == *.* ]]; then
+        open -a "Google Chrome" "https://$arg"
+    else
+        # If it's just a word, treat it as part of a search query
+        search_query=$(rawurlencode "$arg")
+        open -a "Google Chrome" "https://www.google.com/search?q=$search_query"
+    fi
+done
+
